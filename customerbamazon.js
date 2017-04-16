@@ -38,6 +38,7 @@ function showTable() {
 }
 //Function for prompting the seller for which product they would like to buy
 function chooseProducts() {
+    showTable();
     connection.query("SELECT * FROM products", function(err, res) {
         if (err) throw err;
         inquirer.prompt([{
@@ -55,7 +56,7 @@ function chooseProducts() {
 
                 switch (data.input) {
                     case productArray[x]:
-                        buyProducts(data.input, res[x].stock_quantity, parseInt(res[x].price));
+                        buyProducts(res[x].stock_quantity, res[x].price, res[x].product_name);
                 }
             }
 
@@ -64,27 +65,68 @@ function chooseProducts() {
 }
 
 //Function to actually buy/order the products
-function buyProducts(product, quantity, cost) {
-    console.log(product);
-    console.log(quantity);
+function buyProducts(quantity, cost, name) {
+    //  console.log(product);
+    //  console.log(quantity);
+    //console.log(name);
     inquirer.prompt([{
         name: "number",
         message: "How many units would you like to purchase?"
     }]).then(function(answers) {
-        console.log(answers.number);
-        checkout(parseInt(answers.number), quantity, cost);
+        //console.log(answers.number);
+        checkout(answers.number, quantity, cost, name);
     });
 
 }
+
 //function to check to see if you can buy the units requested
-function checkout(units, quantity, cost) {
+function checkout(units, quantity, cost, name) {
     var total = units * cost;
     if (units < quantity) {
         console.log("Your total will be $ " + total);
         quantity = quantity - units;
+        updateTable(name, quantity);
+        inquirer.prompt([{
+            type: "list",
+            message: "Would you like to place another order?",
+            choices: ["Yes", "No"],
+            name: "input"
+        }]).then(function(response) {
+            if (response.input === "Yes") {
+                chooseProducts();
+            } else {
+                connection.end(function() {
+                    console.log("Thank you for shopping with us, please come back real soon");
+                });
+            }
+        });
     } else {
         console.log("Not enough in stock");
+        inquirer.prompt([{
+            type: "list",
+            message: "Would you like to try again?",
+            choices: ["Yes", "No"],
+            name: "input"
+        }]).then(function(response) {
+            if (response.input === "Yes") {
+                buyProducts();
+            } else {
+                connection.end(function() {
+                    console.log("We are sorry we could not meet your demand.  Please check back with us soon for updated quantities");
+                });
+
+            }
+        })
+
     }
 }
-showTable();
+
+//Function to update the quantity after checkout and redraw the table
+function updateTable(name, quantity) {
+    connection.query("UPDATE products SET? WHERE?", [{
+        stock_quantity: quantity
+    }, {
+        product_name: name
+    }], function(err, res) {});
+}
 chooseProducts();

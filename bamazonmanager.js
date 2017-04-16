@@ -85,7 +85,7 @@ function showLowInventory() {
         var count = 0;
         for (i = 0; i < res.length; i++) {
             if (res[i].stock_quantity < 6) {
-                console.log(res[i].product_name);
+                console.log("You currently have "+ res[i].stock_quantity+" "+res[i].product_name+" in stock.");
                 count++;
             }
         }

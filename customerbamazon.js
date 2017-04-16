@@ -38,7 +38,6 @@ function showTable() {
 }
 //Function for prompting the seller for which product they would like to buy
 function chooseProducts() {
-    showTable();
     connection.query("SELECT * FROM products", function(err, res) {
         if (err) throw err;
         inquirer.prompt([{
@@ -53,9 +52,10 @@ function chooseProducts() {
             name: "input"
         }]).then(function(data) {
             for (var x = 0; x < res.length; x++) {
+
                 switch (data.input) {
                     case productArray[x]:
-                        buyProducts(data.input, res[x].stock_quantity, res[x].price);
+                        buyProducts(data.input, res[x].stock_quantity, parseInt(res[x].price));
                 }
             }
 
@@ -67,23 +67,24 @@ function chooseProducts() {
 function buyProducts(product, quantity, cost) {
     console.log(product);
     console.log(quantity);
-    console.log(cost);
     inquirer.prompt([{
         name: "number",
         message: "How many units would you like to purchase?"
     }]).then(function(answers) {
         console.log(answers.number);
-        checkout(answers.number, quantity);
+        checkout(parseInt(answers.number), quantity, cost);
     });
 
 }
 //function to check to see if you can buy the units requested
 function checkout(units, quantity, cost) {
+    var total = units * cost;
     if (units < quantity) {
-        console.log("Your total will be $ " + parseInt(cost) * parseInt(units));
+        console.log("Your total will be $ " + total);
+        quantity = quantity - units;
     } else {
         console.log("Not enough in stock");
     }
 }
-
+showTable();
 chooseProducts();

@@ -40,3 +40,12 @@ VALUES ("Dog Squeak Toy", "Pets", 8.99, 80);
 
 INSERT INTO products (product_name, department_name, price, stock_quantity)
 VALUES ("Android TV Box", "Electronics", 59.99, 25);
+
+
+CREATE TABLE departments(
+  department_id INTEGER(100) NOT NULL AUTO_INCREMENT,
+  department_name VARCHAR(50) NOT NULL,
+  over_head_cost DECIMAL(10, 2) NOT NULL,
+  total_sales DECIMAL(10, 2) NOT NULL,
+  PRIMARY KEY (department_id)
+);

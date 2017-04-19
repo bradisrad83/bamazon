@@ -57,7 +57,7 @@ function buildTable() {
         //loop that goes through our product table and pushes the rows into the array table
         for (var i = 0; i < res.length; i++) {
             table.push(
-                [res[i].item_id, res[i].product_name, res[i].department_name, res[i].price, res[i].stock_quantity]
+                [res[i].item_id, res[i].product_name, res[i].department_name, "$ "+res[i].price, res[i].stock_quantity]
             );
         }
         console.log(table.toString());
@@ -85,7 +85,7 @@ function showLowInventory() {
         var count = 0;
         for (i = 0; i < res.length; i++) {
             if (res[i].stock_quantity < 6) {
-                console.log("You currently have "+ res[i].stock_quantity+" "+res[i].product_name+" in stock.");
+                console.log("You currently have " + res[i].stock_quantity + " " + res[i].product_name + " in stock.");
                 count++;
             }
         }
@@ -146,24 +146,27 @@ function update(data) {
             }, {
                 product_name: data.product_name
             }],
-            function(err, res) {});
-    });
+            function(err, res) {
 
-    inquirer.prompt([{
-        type: "list",
-        message: "Would you like to do more?",
-        choices: ["Yes", "No"],
-        name: "input"
-    }]).then(function(response) {
-        if (response.input === "Yes") {
-            start();
-        } else {
-            connection.end(function() {
-                console.log("Please log back on soon to keep up with the demand.");
+                inquirer.prompt([{
+                    type: "list",
+                    message: "Would you like to do more?",
+                    choices: ["Yes", "No"],
+                    name: "input"
+                }]).then(function(response) {
+                    if (response.input === "Yes") {
+                        start();
+                    } else {
+                        connection.end(function() {
+                            console.log("Please log back on soon to keep up with the demand.");
+                        });
+
+                    }
+                });
             });
-
-        }
     });
+
+
 }
 
 function addProduct() {

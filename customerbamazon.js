@@ -2,6 +2,7 @@ var inquirer = require("inquirer");
 var mysql = require("mysql");
 var Table = require("cli-table");
 var productArray = [];
+var new_total = 0;
 var connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
@@ -30,7 +31,7 @@ function showTable() {
         //loop that goes through our product table and pushes the rows into the array table
         for (var i = 0; i < res.length; i++) {
             table.push(
-                [res[i].item_id, res[i].product_name, res[i].department_name, res[i].price, res[i].stock_quantity]
+                [res[i].item_id, res[i].product_name, res[i].department_name, "$ " + res[i].price, res[i].stock_quantity]
             );
         }
         console.log(table.toString());
@@ -56,7 +57,7 @@ function chooseProducts() {
 
                 switch (data.input) {
                     case productArray[x]:
-                        buyProducts(res[x].stock_quantity, res[x].price, res[x].product_name);
+                        buyProducts(res[x].stock_quantity, res[x].price, res[x].product_name, res[x].total_sales);
                 }
             }
 
@@ -65,7 +66,7 @@ function chooseProducts() {
 }
 
 //Function to actually buy/order the products
-function buyProducts(quantity, cost, name) {
+function buyProducts(quantity, cost, name, sales) {
     //  console.log(product);
     //  console.log(quantity);
     //console.log(name);
@@ -74,16 +75,16 @@ function buyProducts(quantity, cost, name) {
         message: "How many units would you like to purchase?"
     }]).then(function(answers) {
         //console.log(answers.number);
-        checkout(answers.number, quantity, cost, name);
+        checkout(answers.number, quantity, cost, name, sales);
     });
 
 }
 
 //function to check to see if you can buy the units requested
-function checkout(units, quantity, cost, name) {
+function checkout(units, quantity, cost, name, sales) {
     var total = units * cost;
     if (units < quantity) {
-        console.log("Your total will be $ " + total);
+        console.log("Your total will be $ " + total.toFixed(2));
         quantity = quantity - units;
         updateTable(name, quantity);
         inquirer.prompt([{
@@ -100,6 +101,7 @@ function checkout(units, quantity, cost, name) {
                 });
             }
         });
+        totalSales(total, name, sales);
     } else {
         console.log("Not enough in stock");
         inquirer.prompt([{
@@ -116,7 +118,7 @@ function checkout(units, quantity, cost, name) {
                 });
 
             }
-        })
+        });
 
     }
 }
@@ -129,4 +131,14 @@ function updateTable(name, quantity) {
         product_name: name
     }], function(err, res) {});
 }
+
+function totalSales(total, name, sales) {
+    new_total = sales + total;
+    connection.query("UPDATE products SET? WHERE?", [{
+        total_sales: new_total
+    }, {
+        product_name: name
+    }], function(err, res) {});
+}
+
 chooseProducts();
